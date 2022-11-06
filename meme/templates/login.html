@@ -1,24 +1,17 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" type="text/css" href="{% static '/style.css/'%}">
-
-    <title>Register</title>
+    <title>Login</title>
 </head>
 <body>
-
     <h1>{{ message }}</h1>
 
-    <h1>Registration</h1>
+    <h1>Login</h1>
 
-    <form action="/register/" method="POST">
-        <input type="text" name="name" id="name" placeholder="Name" autocomplete="off">
-        <input type="text" name="contact" id="contact" placeholder="Contact" maxlength="10" autocomplete="off">
+    <form action="/login/" method="POST">
         <input type="text" name="email" placeholder="Email" autocomplete="off">
         <input type="password" name="password" placeholder="Password" autocomplete="off">
         <button>Submit</button>
