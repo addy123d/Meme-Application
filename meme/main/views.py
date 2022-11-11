@@ -4,6 +4,7 @@ from .utils import registerUser, loginUser
 from django.contrib.sessions.backends.db import SessionStore #For Session Storage 
 
 import psycopg2
+import requests
 
 s = SessionStore()
 
@@ -137,9 +138,7 @@ def login(request):
                 return render(request, 'login.html',{'message' : 'Password Not Matched'})
             else:
                 return render(request, 'login.html',{'message' : 'Not Registered'})
-            
-            
-            
+              
         else:
             return render(request,'login.html')
     
@@ -156,12 +155,82 @@ def logout(request):
 def getmemes(request):
     sessionExists = checkSession()
     
+    # URL:  https://api.imgflip.com/get_memes
+    
+    r = requests.get('https://api.imgflip.com/get_memes')
+    
+    meme_data = r.json()
+    
     if sessionExists == False:
         return redirect("/login/")
     else:
-        return HttpResponse('''<h1>This is a private page, only for authenticated user</h1>
-                                <a href="/logout"><button>Logout</button></a>"''')
+        
+        # [{},{},{}]
+        # Meme Name
+        # Meme URL
+        # Meme ID
+        
+        print(meme_data['data']['memes'])
+        
+        context = {
+            'memes_metadata': r.json()['data']['memes']
+        }
+        
+        return render(request,'memes.html',context=context)
     
+    
+def editmeme(request):
+    
+    sessionStatus = checkSession()
+    
+    if sessionStatus:
+        # Display Update Page
+        template_id = request.GET['id']
+        
+        context = {
+            'meme_id' : template_id
+        }
+        
+        return render(request, 'editmeme.html', context=context)
+    else:
+        return redirect("/login/")
+    
+    
+def memedetails(request):
+    sessionStatus = checkSession()
+    
+    if sessionStatus:
+        
+        if request.method == 'POST':
+            template_id = request.POST['id']
+            text0 = request.POST['text1']
+            text1 = request.POST['text2']
+            
+            # POST Request Meme API
+            
+            payload = {
+                'template_id' : template_id,
+                'username' : '',
+                'password' : '',
+                'text0' : text0,
+                'text1' : text1
+            }
+            
+            response = requests.request('POST','https://api.imgflip.com/caption_image',params=payload).json()
+            
+            print("Response: ")
+            print(response)
+            
+            html_str = f'''
+                         <h1>Response</h1>
+                         <img style="height: 200px; width: 200px" src="{response['data']['url']}" alt="meme">
+                         <a href="{response['data']['url']}">View Image</a>
+                       '''
+            
+            return HttpResponse(html_str)
+            
+    else:
+        return redirect("/login/")
     
 
         
