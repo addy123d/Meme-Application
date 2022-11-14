@@ -11,10 +11,57 @@
 
     <h1>Login</h1>
 
-    <form action="/login/" method="POST">
-        <input type="text" name="email" placeholder="Email" autocomplete="off">
-        <input type="password" name="password" placeholder="Password" autocomplete="off">
-        <button>Submit</button>
-    </form>
+    <!-- <form action="/login/" method="POST"> -->
+        <input type="text" name="email" id="email" placeholder="Email" autocomplete="off">
+        <input type="password" name="password" id="password" placeholder="Password" autocomplete="off">
+        <button id="btn">Submit</button>
+    <!-- </form> -->
 </body>
+<script>
+    const email = document.getElementById("email"),
+          password = document.getElementById("password"),
+          submitButton = document.getElementById("btn");
+
+
+    function validateAndSend(){
+        if((email.value != "") && (email.value.includes("@")) && (password.value != "")){
+            const options = {
+                method : 'POST',
+                body : JSON.stringify({
+                    email : email.value,
+                    password : password.value
+                }),
+                headers: new Headers({
+                    'Content-Type' : 'application/json'
+                })
+            }
+
+            fetch('/login/',options)
+                .then(response=>response.json())
+                .then((response)=>{
+                    console.log(response);
+
+                    if(response.status_code == 503)
+                     // Show Error
+                     alert("Error: Registration Error");
+                    else{
+                        location.href = `${location.origin}/memes/`;
+                    }
+
+                    email.value = "";
+                    password.value = "";
+                })
+                .catch(err=>console.log("Error: ",err));
+        }else{
+            
+            email.value = "";
+            password.value = "";
+
+            alert("Error");
+        }
+    }
+
+    submitButton.addEventListener("click", validateAndSend);
+
+</script>
 </html>

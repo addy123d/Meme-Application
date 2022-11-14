@@ -7,6 +7,8 @@
 
 # users = []  In memory usage
 
+import bcrypt
+
 
 def userExists(userData,cursor):
     '''
@@ -80,9 +82,17 @@ def loginUser(userData,cursor):
      print("User: ")
      print(checkUser)
      
+     
      if checkUser['response']:
             # User exists and now check form password with the stored password
-            if userData['password'] == checkUser['user'][3]:
+            
+            # form se aaya hua password == database m stored password
+            
+            db_password = checkUser['user'][3]
+            
+            print(type(db_password))
+            
+            if bcrypt.checkpw(userData['password'].encode(), db_password.encode()):
                 # Return response dictionary
                 return {'statusCode': 200, 'message': 'loggedin'}
             else:

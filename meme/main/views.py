@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .utils import registerUser, loginUser
 from django.contrib.sessions.backends.db import SessionStore #For Session Storage 
 
 import psycopg2
 import requests
+import bcrypt
+import json
 
 s = SessionStore()
 
@@ -51,24 +53,34 @@ def register(request):
         
             if request.method == 'POST':
                 
+                # Pata Chal Gaya !
+                form_data = json.loads(request.body.decode("utf-8"))
+                
                 # Collect all data from client
-                name = request.POST['name']
-                contact = request.POST['contact']
-                email = request.POST['email']
-                password = request.POST['password']
+                name = form_data.get("name")
+                email = form_data.get("email")
+                contact = form_data.get("contact")
+                password = form_data.get("password")
                 
                 # Print
                 print(f'Name: {name}')
                 print(f'Contact: {contact}')
                 print(f'Email: {email}')
                 print(f'Password: {password}')  
+            
+                password = password.encode()
+            
+                # Hash our password
+                hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+                
+                hashed = hashed.decode('utf-8')
                 
                 # Create User Dictionary
                 userData = {
                     'name' : name,
                     'contact' : contact,
                     'email' : email,
-                    'password' : password
+                    'password' : hashed
                 }     
                 
                 # Register User   
@@ -86,11 +98,13 @@ def register(request):
                     print('Session: ')
                     print(s)
                     
+                    return JsonResponse({'status_code': 200, 'message': 'success'})
                     
                     # return render(request, 'register.html',{'message' : 'Successfully recieved'})
-                    return redirect('/memes/')
+                    # return redirect('/memes/')
                 else:
-                    return render(request, 'register.html',{'message' : 'Already Registered'})
+                    # return render(request, 'register.html',{'message' : 'Already Registered'})
+                    return JsonResponse({'status_code': 503, 'message': 'already_registered'})
             else:
                 return render(request,'register.html')
             
@@ -105,8 +119,11 @@ def login(request):
     if sessionExists == False:
     
         if request.method == 'POST': #We are checking the type of request, GET OR POST
-            email = request.POST['email']
-            password = request.POST['password']
+            form_data = json.loads(request.body.decode("utf-8"))
+                
+            # Collect all data from client
+            password = form_data.get("password")
+            email = form_data.get("email")
             
             # Print
             print('Email: ')
@@ -133,11 +150,15 @@ def login(request):
                 print(s)
                 
                 # return render(request, 'login.html',{'message' : 'Successfully Logged In'})
-                return redirect('/memes/')
+                # return redirect('/memes/')
+                
+                return JsonResponse({'status_code': 200, 'message': 'success'})
+                
             elif response['statusCode'] == 503 and response['message'] == 'passworderror':
                 return render(request, 'login.html',{'message' : 'Password Not Matched'})
             else:
-                return render(request, 'login.html',{'message' : 'Not Registered'})
+                # return render(request, 'login.html',{'message' : 'Not Registered'})
+                return JsonResponse({'status_code': 503, 'message': 'authentication_error'})
               
         else:
             return render(request,'login.html')
@@ -206,12 +227,11 @@ def memedetails(request):
             text0 = request.POST['text1']
             text1 = request.POST['text2']
             
-            # POST Request Meme API
-            
+            # POST Request Meme API            
             payload = {
                 'template_id' : template_id,
-                'username' : '',
-                'password' : '',
+                'username' : 'Adityachaudhary2',
+                'password' : 'qweasd01!@',
                 'text0' : text0,
                 'text1' : text1
             }
@@ -225,7 +245,7 @@ def memedetails(request):
                          <h1>Response</h1>
                          <img style="height: 200px; width: 200px" src="{response['data']['url']}" alt="meme">
                          <a href="{response['data']['url']}">View Image</a>
-                       '''
+                        '''
             
             return HttpResponse(html_str)
             

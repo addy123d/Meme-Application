@@ -16,12 +16,74 @@
 
     <h1>Registration</h1>
 
-    <form action="/register/" method="POST">
+    <!-- <form action="/register/" method="POST"> -->
         <input type="text" name="name" id="name" placeholder="Name" autocomplete="off">
-        <input type="text" name="contact" id="contact" placeholder="Contact" maxlength="10" autocomplete="off">
-        <input type="text" name="email" placeholder="Email" autocomplete="off">
-        <input type="password" name="password" placeholder="Password" autocomplete="off">
-        <button>Submit</button>
-    </form>
+        <input type="text" name="contact" id="contact" placeholder="Contact" autocomplete="off">
+        <input type="text" name="email" id="email" placeholder="Email" autocomplete="off">
+        <input type="password" name="password" id="password" placeholder="Password" autocomplete="off">
+        <button id="registerButton">Submit</button>
+    <!-- </form> -->
 </body>
+<script>
+    const name = document.getElementById("name"),
+          contact = document.getElementById("contact"),
+          email = document.getElementById("email"),
+          password = document.getElementById("password"),
+          registerButton = document.getElementById("registerButton");
+
+    
+    function validateAndSend(){
+
+        const validate_condition = (name.value != "") && (contact.value != "") && (contact.value.length == 10) && (email.value != "") && (email.value.includes("@")) && (password.value != "");
+
+        if(validate_condition){
+            // Send these details to server !
+
+            console.log(name.value);
+
+            const options = {
+                method : 'POST',
+                body : JSON.stringify({
+                    name : name.value,
+                    email : email.value,
+                    contact : contact.value,
+                    password : password.value
+                }),
+                headers : new Headers({
+                    'Content-Type' : 'application/json'
+                })
+            }
+
+            fetch('/register/',options)
+                .then(response=>response.json())
+                .then((response)=>{
+                    console.log(response);
+
+                    if(response.status_code == 503)
+                        // Show Error
+                        alert("Error: Registration Error");
+                    else{
+                        location.href = `${location.origin}/memes/`;
+                    }
+
+                    // Empty all the inputs !
+                    name.value = "";
+                    email.value = "";
+                    contact.value = "";
+                    password.value = "";
+                })
+                .catch(err=>console.log("Error: ",err));
+
+
+        }else{
+            name.value = "";
+            email.value = "";
+            contact.value = "";
+            password.value = "";
+            alert("ERROR: All fields are mandatory");
+        }
+    }
+
+    registerButton.addEventListener("click", validateAndSend);
+</script>
 </html>
